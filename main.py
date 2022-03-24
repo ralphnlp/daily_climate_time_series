@@ -31,13 +31,15 @@ class TimeSerise(torch.nn.Module):
         self.len_seq, self.n_feature = input_size
         self.output_size = output_size
         self.layer_1 = torch.nn.Parameter(torch.randn((self.n_feature, 4)), requires_grad=True)
+        self.bias_1 = torch.nn.Parameter(torch.randn(4), requires_grad=True)
         self.relu = torch.nn.LeakyReLU()
         self.layer_2 = torch.nn.Parameter(torch.randn((4, self.output_size)), requires_grad=True)
+        self.bias_2 = torch.nn.Parameter(torch.randn(4), requires_grad=True)
 
     def forward(self, X):
-        outputs = torch.matmul(X, self.layer_1)
+        outputs = torch.matmul(X, self.layer_1) + self.bias_1
         outputs = self.relu(outputs)
-        outputs = torch.matmul(outputs, self.layer_2)
+        outputs = torch.matmul(outputs, self.layer_2) + self.bias_2
         outputs = torch.sum(outputs, dim=1)
         return outputs
 
@@ -54,7 +56,7 @@ if __name__ == '__main__':
     model = TimeSerise(x.shape[1:], y.shape[1])
     cri = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr = 0.05)
-    epochs = 5000
+    epochs = 20000
 
     train_losses, val_losses = [], []
     for epoch in range(epochs):
